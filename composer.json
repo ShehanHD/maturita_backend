@@ -1,0 +1,10 @@
+{
+    "require": {
+      "firebase/php-jwt": "^5.2",
+      "ext-json": "*",
+      "ext-pdo": "*",
+      "ext-openssl": "*"
+    },
+  "name": "Carpooling@2021",
+  "description": "Esame maturità"
+}

@@ -1,0 +1,11 @@
+version: "2.1"
+
+services:
+  backend_carpool:
+    container_name: backend_carpool
+    build: ./.
+    volumes:
+      - ./:/var/www/html/
+    ports:
+      - 8888:80
+    restart: always
