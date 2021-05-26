@@ -3,7 +3,7 @@ version: "2.1"
 services:
   backend_carpool:
     container_name: backend_carpool
-    build: ./.
+    build: .
     volumes:
       - ./:/var/www/html/
     ports:

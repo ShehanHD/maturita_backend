@@ -1,13 +1,5 @@
 CREATE DATABASE IF NOT EXISTS carpool;
 
--- la tabella patente è un risltato di normalizzazione della tabella utente
-CREATE TABLE IF NOT EXISTS patente(
-  numero_patente VARCHAR(20) PRIMARY KEY,
-  grado VARCHAR(10) NOT NULL,
-  rilasciato DATE NOT NULL,
-  scadenza DATE NOT NULL
-);
-
 -- autista e passeggero tutti i due utenti possiamo trovare nella tabella
 -- in questa tabella ho aggiunto il campo password perchè mi serviva a fare login
 -- poi la patente aggiungo come chiave esterna
@@ -18,10 +10,19 @@ CREATE TABLE IF NOT EXISTS utente(
   email VARCHAR(50) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   telefono VARCHAR(14) NOT NULL UNIQUE,
-  carta_identita VARCHAR(20),
-  id_patente VARCHAR(20),
-  FOREIGN KEY (id_patente) REFERENCES patente(numero_patente)
+  carta_identita VARCHAR(20) NOT NULL UNIQUE
 );
+
+-- la tabella autista è un risultato di normalizzazione della tabella utente
+CREATE TABLE IF NOT EXISTS autista(
+  id_utente INT NOT NULL PRIMARY KEY,
+  numero_patente VARCHAR(255) NOT NULL UNIQUE,
+  grado VARCHAR(10) NOT NULL,
+  rilasciato DATE NOT NULL,
+  scadenza DATE NOT NULL,
+  FOREIGN KEY (id_utente) REFERENCES utente(id)
+);
+
 
 -- qui discrive il veicolo che viene usata nel viaggio
 -- autista e la chiave esterna
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS veicolo(
   foto BLOB NOT NULL,
   id_autista INT NOT NULL,
   PRIMARY KEY (targa, id_autista),
-  FOREIGN KEY (id_autista) REFERENCES utente(id)
+  FOREIGN KEY (id_autista) REFERENCES autista(id_utente)
 );
 
 -- id primario non viene creata da solo, ma il sistema genera un chiave significatva
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS prenotazione(
   id INT AUTO_INCREMENT PRIMARY KEY,
   id_passeggero INT NOT NULL,
   id_viaggio VARCHAR(20) NOT NULL,
-  stato ENUM('pending', 'accepted', 'refused') DEFAULT 'pending',
+  stato ENUM('pending', 'accepted', 'refused') NOT NULL DEFAULT 'pending',
   UNIQUE (id_passeggero, id_viaggio),
   FOREIGN KEY (id_passeggero) REFERENCES utente(id),
   FOREIGN KEY (id_viaggio) REFERENCES viaggio(id)
@@ -81,5 +82,5 @@ CREATE TABLE IF NOT EXISTS feedback(
   UNIQUE (id_autista, id_viaggio, id_passeggero, da_chi),
   FOREIGN KEY (id_viaggio) REFERENCES viaggio(id),
   FOREIGN KEY (id_passeggero) REFERENCES utente(id),
-  FOREIGN KEY (id_autista) REFERENCES utente(id)
+  FOREIGN KEY (id_autista) REFERENCES autista(id_utente)
 );

@@ -1,7 +1,7 @@
 <?php
 
 
-class Rest
+class Rest implements HttpMapping
 {
     public function __construct($REQUEST_METHOD, $PARAMS, $BODY)
     {
@@ -22,5 +22,45 @@ class Rest
                 $this->deleteMapping($PARAMS, $BODY);
                 break;
         }
+    }
+
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     * @return mixed
+     */
+    function getMapping($PARAMS, $BODY)
+    {
+        // TODO: Implement getMapping() method.
+    }
+
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     * @return void
+     */
+    function postMapping($PARAMS, $BODY)
+    {
+        // TODO: Implement postMapping() method.
+    }
+
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     * @return void
+     */
+    function deleteMapping($PARAMS, $BODY)
+    {
+        // TODO: Implement deleteMapping() method.
+    }
+
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     * @return void
+     */
+    function patchMapping($PARAMS, $BODY)
+    {
+        // TODO: Implement patchMapping() method.
     }
 }

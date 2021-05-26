@@ -1,6 +1,6 @@
 <?php
 
-function __autoload($class_name)
+function __autoload($class_name): bool
 {
     $folders = array(
         "api",

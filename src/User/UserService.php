@@ -15,7 +15,7 @@ class UserService
             $this->userRepository->newUser($BODY);
         }
         else{
-            HTTP_Response::Send(HTTP_Response::MSG_BAD_REQUEST, HTTP_Response::BAD_REQUEST);
+            HTTP_Response::SendWithBody(HTTP_Response::MSG_BAD_REQUEST,["error_msg" => "Password o email sbagliato!"], HTTP_Response::BAD_REQUEST);
         }
     }
 
@@ -24,13 +24,17 @@ class UserService
         $this->userRepository->loginUser($BODY);
     }
 
-    public function addIdentity($id, $BODY)
+    public function addLicense($BODY)
     {
-        $this->userRepository->addIdentity($id, $BODY);
+        Authentication::verifyJWT()
+            ? $this->userRepository->addLicense(Authentication::getId(), $BODY)
+            : HTTP_Response::Send(HTTP_Response::MSG_UNAUTHORIZED, HTTP_Response::UNAUTHORIZED);
     }
 
-    public function addLicense($id, $BODY)
+    public function addVehicle($BODY)
     {
-        $this->userRepository->addLicense($id, $BODY);
+        Authentication::verifyJWT()
+            ? $this->userRepository->addVehicle(Authentication::getId(), $BODY)
+            : HTTP_Response::Send(HTTP_Response::MSG_UNAUTHORIZED, HTTP_Response::UNAUTHORIZED);
     }
 }

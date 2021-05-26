@@ -1,7 +1,7 @@
 <?php
 
 
-class TripController extends Rest implements HttpMapping
+class TripController extends Rest
 {
     private TripService $tripService;
 
@@ -17,23 +17,68 @@ class TripController extends Rest implements HttpMapping
         parent::__construct($REQUEST_METHOD, $PARAMS, $BODY);
     }
 
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     */
     function getMapping($PARAMS, $BODY)
     {
-        // TODO: Implement getMapping() method.
+        switch ($PARAMS[0]){
+            case "all_available":
+                $this->tripService->getAllAvailable();
+                break;
+            case "all_driven":
+                $this->tripService->getAllDriven();
+                break;
+            case "all_participated":
+                $this->tripService->getAllParticipated();
+                break;
+            case "all_filtered":
+                $this->tripService->getAllFiltered($PARAMS[1], $PARAMS[2], $PARAMS[3]);
+                break;
+            case "get_vehicles":
+                $this->tripService->getVehicleByDriver();
+                break;
+            case "by_id":
+                $this->tripService->getTripById($PARAMS[1]);
+                break;
+            default:
+                HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
+                break;
+        }
     }
 
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     */
     function postMapping($PARAMS, $BODY)
     {
-        // TODO: Implement postMapping() method.
+        switch ($PARAMS[0]){
+            case "new":
+                $this->tripService->newTrip($BODY);
+                break;
+            default:
+                HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
+                break;
+        }
     }
 
-    function deleteMapping($PARAMS, $BODY)
-    {
-        // TODO: Implement deleteMapping() method.
-    }
-
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     */
     function patchMapping($PARAMS, $BODY)
     {
-        // TODO: Implement patchMapping() method.
+        switch ($PARAMS[0]) {
+            case "close":
+                $this->tripService->closeTrip($PARAMS[1]);
+                break;
+            default:
+                HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
+                break;
+        }
     }
+
+
 }

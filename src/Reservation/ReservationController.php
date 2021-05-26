@@ -1,18 +1,18 @@
 <?php
 
-class UserController extends Rest
-{
-    private UserService $userService;
 
+class ReservationController extends Rest
+{
+    private ReservationService $reservationService;
     /**
-     * UserController constructor.
+     * ReservationController constructor.
      * @param $REQUEST_METHOD
      * @param $PARAMS
      * @param $BODY
      */
     public function __construct($REQUEST_METHOD, $PARAMS, $BODY)
     {
-        $this->userService = new UserService();
+        $this->reservationService = new ReservationService();
         parent::__construct($REQUEST_METHOD, $PARAMS, $BODY);
     }
 
@@ -23,8 +23,11 @@ class UserController extends Rest
     function getMapping($PARAMS, $BODY)
     {
         switch ($PARAMS[0]){
-            case "login":
-                $this->userService->loginUser($BODY);
+            case "by_trip_id":
+                $this->reservationService->getBookingByTripId($PARAMS[1]);
+                break;
+            case "all_participated":
+                $this->reservationService->getAllBookingParticipated();
                 break;
             default:
                 HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
@@ -39,18 +42,30 @@ class UserController extends Rest
     function postMapping($PARAMS, $BODY)
     {
         switch ($PARAMS[0]){
-            case "register":
-                $this->userService->newUser($BODY);
-                break;
-            case 'add_license':
-                $this->userService->addLicense($BODY);
-                break;
-            case 'add_vehicle':
-                $this->userService->addVehicle($BODY);
+            case "on":
+                $this->reservationService->bookATrip($PARAMS[1]);
                 break;
             default:
                 HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
                 break;
         }
     }
+
+    /**
+     * @param $PARAMS
+     * @param $BODY
+     */
+    function patchMapping($PARAMS, $BODY)
+    {
+        switch ($PARAMS[0]){
+            case "state":
+                $this->reservationService->bookingState($PARAMS[1], $BODY);
+                break;
+            default:
+                HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
+                break;
+        }
+    }
+
+
 }

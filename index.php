@@ -1,6 +1,6 @@
 <?php
 require_once("./src/helpers/common.php");
-require_once("./src/api/HttpMaping.php");
+require_once("./src/helpers/HttpMapping.php");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     header("Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS");
