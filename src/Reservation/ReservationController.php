@@ -26,6 +26,9 @@ class ReservationController extends Rest
             case "by_trip_id":
                 $this->reservationService->getBookingByTripId($PARAMS[1]);
                 break;
+            case "all_passengers_by_trip_id":
+                $this->reservationService->getBookingAllPassengersByTripId($PARAMS[1], $PARAMS[2] ?? 0);
+                break;
             case "all_participated":
                 $this->reservationService->getAllBookingParticipated();
                 break;

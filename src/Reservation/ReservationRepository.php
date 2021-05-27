@@ -43,6 +43,34 @@ class ReservationRepository
         }
     }
 
+    public function getBookingAllPassengersByTripId($USER_ID, $TRIP_ID, $VOTE)
+    {
+        try{
+            if (!$this->isDriver($USER_ID, $TRIP_ID)) {
+                HTTP_Response::SendWithBody(HTTP_Response::MSG_BAD_REQUEST, ["error_msg" => "non sei la autista del viaggio"], HTTP_Response::BAD_REQUEST);
+            }
+            else{
+                $stmt = $this->connection->prepare(
+                    "SELECT *, AVG(f.voto) voto_media FROM prenotazione p
+                            JOIN feedback f 
+                                ON p.id_passeggero = f.id_passeggero
+                                AND p.id_viaggio = :id_viaggio
+                                AND f.da_chi = 'passeggero'
+                                GROUP BY p.id_passeggero
+                                HAVING AVG(f.voto) > :voto;"
+                );
+                $stmt->execute([
+                    "id_viaggio" => $TRIP_ID,
+                    "voto" => $VOTE
+                ]);
+                HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
+            }
+        }
+        catch (PDOException $exception){
+            HTTP_Response::SendWithBody(HTTP_Response::MSG_INTERNAL_SERVER_ERROR, $exception, HTTP_Response::INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function bookATrip($USER_ID, $TRIP_ID)
     {
         try{

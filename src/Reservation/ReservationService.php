@@ -40,4 +40,11 @@ class ReservationService
             ? $this->reservationRepository->getAllBookingParticipated(Authentication::getId())
             : HTTP_Response::Send(HTTP_Response::MSG_UNAUTHORIZED, HTTP_Response::UNAUTHORIZED);
     }
+
+    public function getBookingAllPassengersByTripId($TRIP_ID, $VOTE)
+    {
+        Authentication::verifyJWT()
+            ? $this->reservationRepository->getBookingAllPassengersByTripId(Authentication::getId(), $TRIP_ID, $VOTE)
+            : HTTP_Response::Send(HTTP_Response::MSG_UNAUTHORIZED, HTTP_Response::UNAUTHORIZED);
+    }
 }
