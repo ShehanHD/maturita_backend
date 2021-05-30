@@ -28,7 +28,7 @@ function __autoload($class_name): bool
 
 function controlOrigin($ORIGIN): bool
 {
-    $whiteList = array("https://maturita.wecode.best", "http://localhost:3000", null);
+    $whiteList = array("https://backend.wecode.best", "http://localhost:3000", null);
     $verified = false;
 
     foreach ($whiteList as $value) {
@@ -40,7 +40,31 @@ function controlOrigin($ORIGIN): bool
     return $verified;
 }
 
-function sendMail($body, $https_server ="192.168.1.100:40006/api/send"){
+function sendMail($state, $data){
+    $email = "";
+    switch ($state){
+        case "accepted":
+            $email = reservationConformMail($data[0]);
+            break;
+        case "refused":
+            $email = reservationRejectMail($data[0]);
+            break;
+        case "new":
+            $email = newReservationMail($data[0]);
+            break;
+        default:
+            HTTP_Response::Send(HTTP_Response::MSG_BAD_REQUEST, HTTP_Response::BAD_REQUEST);
+            break;
+    }
+
+    $body = [
+        "from" => "wecode.best.server@gmail.com",
+        "to"=> "shehanhd@gmail.com",//$data[0]['email'],
+        "subject"=> "Verify user registration",
+        "text"=> "test mail",
+        "html"=> $email
+    ];
+
     $opts = array('http' =>
         array(
             'method'  => 'POST',
@@ -51,51 +75,263 @@ function sendMail($body, $https_server ="192.168.1.100:40006/api/send"){
     );
 
     $context  = stream_context_create($opts);
-    $url = "http://".$https_server;
+    $url = "http://192.168.1.100:40006/api/send";
 
-    return file_get_contents($url, false, $context =$context);
+    return file_get_contents($url, false, $context);
 }
 
-/*
- $body = [
-            "from" => "wecode.best.server@gmail.com",
-            "to"=> "sathsaranifernando001@gmail.com ",
-            "subject"=> "Verify user registration",
-            "text"=> "test mail",
-            "html"=> $this->prepareMail("Moda Yakaaaaaaaaaaaa")
-            ];
-
-        $response = sendMail($body);
-        echo $response;
-
-public function prepareMail($code): string
+function reservationConformMail($data): string
 {
+    $tripId = $data["id"];
+    $partenza = $data["partenza"];
+    $destinazione = $data["destinazione"];
+    $data_di_partenza = $data["data_di_partenza"];
+    $durata = $data["durata"];
+    $contributo = $data["contributo"];
+    $soste = $data["soste"];
+    $bagagli = $data["bagagli"] ? "Yes" : "No";
+    $animali = $data["animali"] ? "Yes" : "No";
+    $cognome = $data["cognome"];
+    $nome = $data["nome"];
+    $email = $data["email"];
+    $telefono = $data["telefono"];
+
     return ("
-        <!DOCTYPE html>
-        <html lang='en'>
-        <head>
-        <style>
-        h1 {
-          color: rgb(247, 247, 247);
-          text-align: center;
-          font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-        background-color: blue;
-        }
-        p  {
-          color: rgb(0, 0, 0);
-          font-family: courier,serif;
-          font-size: 160%;
-        }
-        </style>
-        <title>Carpool</title>
-        </head>
-        <body>
-
-        <h1>Carpool</h1>
-        <p>Your verification code is : <b>$code</b></p>
-
-        </body>
-        </html>
+            <html>
+            
+            <head>
+              <style>
+                h1 {
+                  color: rgb(247, 247, 247);
+                  text-align: center;
+                  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+                  background-color: #334a5a;
+                  border-radius: 0 2em;
+                  padding: 1vh;
+                }
+            
+                p {
+                  color: rgb(0, 0, 0);
+                  text-align: center;
+                }
+            
+                .content {
+                  display: flex;
+                  justify-content: center !important;
+                }
+            
+                .footer {
+                  background-color: #334a5a;
+                  padding: 1vh;
+                }
+            
+                .footer>p {
+                  color: white;
+                }
+            
+                .footer>p>a {
+                  color: #a0e9f1;
+                }
+            
+                .footer>p>a:visited {
+                  color: #a0e9f1;
+                }
+            
+                img {
+                  width: 15vw;
+                }
+              </style>
+            </head>
+            
+            <body>
+            
+              <h1>Carpool</h1>
+              <p>Your request has been <b>accepted</b></p>
+            
+              <div class='content'>
+                <img src='https://www.seekpng.com/png/full/373-3737336_uber-clipart.png'>
+                <ul>
+                  <li>Id trip: $tripId</li>
+                  <li>Departure from: $partenza</li>
+                  <li>Destination to: $destinazione</li>
+                  <li>Departure at: $data_di_partenza</li>
+                  <li>Estimated duration: $durata</li>
+                  <li>Contribution: $contributo</li>
+                  <li>Stops: $soste</li>
+                  <li>Luggages: $bagagli</li>
+                  <li>Pets: $animali</li>
+                </ul>
+              </div>
+            
+              <div class='footer'>
+                <p>For more information you can contact you driver <b>$cognome $nome</b></p>
+                <p>email <a href='mailto:$email'>$email</a> and Telephone <a href='tel:+$telefono'>$telefono</a></p>
+              </div>
+            </body>
+            
+            </html>
         ");
 }
- */
+
+function reservationRejectMail($data) : string
+{
+    $tripId = $data["id"];
+    $partenza = $data["partenza"];
+    $destinazione = $data["destinazione"];
+    $cognome = $data["cognome"];
+    $nome = $data["nome"];
+    $email = $data["email"];
+    $telefono = $data["telefono"];
+
+    return ("
+            <html>
+            
+            <head>
+              <style>
+                h1 {
+                  color: rgb(247, 247, 247);
+                  text-align: center;
+                  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+                  background-color: #334a5a;
+                  border-radius: 0 2em;
+                  padding: 1vh;
+                }
+            
+                p {
+                  color: rgb(0, 0, 0);
+                  text-align: center;
+                }
+            
+                .content {
+                  display: flex;
+                  justify-content: center !important;
+                }
+            
+                .footer {
+                  background-color: #334a5a;
+                  padding: 1vh;
+                }
+            
+                .footer>p {
+                  color: white;
+                }
+            
+                .footer>p>a {
+                  color: #a0e9f1;
+                }
+            
+                .footer>p>a:visited {
+                  color: #a0e9f1;
+                }
+            
+                img {
+                  width: 15vw;
+                }
+              </style>
+            </head>
+            
+            <body>
+            
+              <h1>Carpool</h1>
+              <p>Your request has been <b>rejected</b></p>
+            
+                <div class='content'>
+                    <img src='https://www.seekpng.com/png/full/373-3737336_uber-clipart.png'>
+                    <ul>
+                      <li>Id trip: $tripId</li>
+                      <li>Departure from: $partenza</li>
+                      <li>Destination to: $destinazione</li>
+                    </ul>
+                </div>
+              
+              <div class='footer'>
+                <p>For more information you can contact you driver <b>$cognome $nome</b></p>
+                <p>email <a href='mailto:$email'>$email</a> and Telephone <a href='tel:+$telefono'>$telefono</a></p>
+              </div>
+            </body>
+            
+            </html>
+        ");
+}
+
+function newReservationMail($data) : string{
+    $tripId = $data["trip_id"];
+    $partenza = $data["partenza"];
+    $destinazione = $data["destinazione"];
+    $cognome = $data["cognome"];
+    $nome = $data["nome"];
+    $email = $data["email"];
+    $telefono = $data["telefono"];
+
+    return ("
+            <html>
+            
+            <head>
+              <style>
+                h1 {
+                  color: rgb(247, 247, 247);
+                  text-align: center;
+                  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+                  background-color: #334a5a;
+                  border-radius: 0 2em;
+                  padding: 1vh;
+                }
+            
+                p {
+                  color: rgb(0, 0, 0);
+                  text-align: center;
+                }
+            
+                .content {
+                  display: flex;
+                  justify-content: center !important;
+                }
+            
+                .footer {
+                  background-color: #334a5a;
+                  padding: 1vh;
+                }
+            
+                .footer>p {
+                  color: white;
+                }
+            
+                .footer>p>a {
+                  color: #a0e9f1;
+                }
+            
+                .footer>p>a:visited {
+                  color: #a0e9f1;
+                }
+            
+                img {
+                  width: 15vw;
+                }
+              </style>
+            </head>
+            
+            <body>
+            
+              <h1>Carpool</h1>
+              <p>New reservation on your Trip ($tripId)</p>
+            
+                <div class='content'>
+                    <img src='https://www.seekpng.com/png/full/373-3737336_uber-clipart.png'>
+                    <ul>
+                      <li>Departure from: $partenza</li>
+                      <li>Destination to: $destinazione</li>
+                      <li>Passanger: $cognome $nome</li>
+                       <li>e-mail <a href='mailto:$email'>$email</a></li>
+                       <li>Telephone number <a href='tel:+$telefono'>$telefono</a></li>
+                    </ul>
+                </div>
+              
+              <div class='footer'>
+                <p>For more information you can contact you driver <b> </b></p>
+                <p>email  and Telephone </p>
+              </div>
+            </body>
+            
+            </html>
+        ");
+}

@@ -30,13 +30,13 @@ class UserRepository
         }
     }
 
-    public function loginUser($BODY)
+    public function loginUser($USERNAME, $PASSWORD)
     {
         try{
             $stmt = $this->connection->prepare("SELECT id FROM utente WHERE email = :email AND password = :password;");
             $stmt->execute([
-                'email' => $BODY->email,
-                'password' => Authentication::encrypt($BODY->password)
+                'email' => $USERNAME,
+                'password' => Authentication::encrypt($PASSWORD)
             ]);
 
             if($stmt->rowCount()) {

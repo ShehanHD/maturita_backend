@@ -83,7 +83,14 @@ class ReservationRepository
                     "id_passeggero" => $USER_ID,
                     "id_viaggio" => $TRIP_ID
                 ]);
-                HTTP_Response::Send(HTTP_Response::MSG_OK, HTTP_Response::OK);
+
+                if ($stmt->rowCount())  {
+                    sendMail("new", $this->getPassengerAndTripData($USER_ID, $TRIP_ID));
+                    HTTP_Response::Send(HTTP_Response::MSG_OK, HTTP_Response::OK);
+                }
+                else{
+                    HTTP_Response::Send(HTTP_Response::MSG_NOT_ACCEPTABLE, HTTP_Response::NOT_ACCEPTABLE);
+                }
             }
         }
         catch (PDOException $exception){
@@ -98,13 +105,20 @@ class ReservationRepository
                 HTTP_Response::SendWithBody(HTTP_Response::MSG_BAD_REQUEST, ["error_msg" => "Solo autista può cambiare stato della prenotazione"], HTTP_Response::BAD_REQUEST);
             }
             else {
-                $stmt = $this->connection->prepare("UPDATE prenotazione SET stato = :stato WHERE id_viaggio = :id_viaggio;");
+                $stmt = $this->connection->prepare("UPDATE prenotazione SET stato = :stato WHERE id_viaggio = :id_viaggio AND id_passeggero = :id_passeggero;");
                 $stmt->execute([
                     "id_viaggio" => $TRIP_ID,
+                    "id_passeggero" => $BODY->id_passeggero,
                     "stato" => $BODY->state
                     ]);
 
-                HTTP_Response::Send(HTTP_Response::MSG_OK, HTTP_Response::OK);
+                if ($stmt->rowCount())  {
+                    sendMail($BODY->state, $this->getTripData($TRIP_ID));
+                    HTTP_Response::Send(HTTP_Response::MSG_OK, HTTP_Response::OK);
+                }
+                else{
+                    HTTP_Response::Send(HTTP_Response::MSG_NOT_ACCEPTABLE, HTTP_Response::NOT_ACCEPTABLE);
+                }
             }
         }
         catch (PDOException $exception){
@@ -123,4 +137,48 @@ class ReservationRepository
         return (bool)$stmt->rowCount();
     }
 
+    private function getTripData($TRIP_ID)
+    {
+        try{
+            $stmt = $this->connection->prepare(
+                "SELECT 
+                            v.id, id_autista, id_veicolo, partenza, destinazione, durata, data_di_partenza, contributo, stato, bagagli, soste, animali,
+                            nome, cognome, email, password, telefono
+                            FROM viaggio v 
+                            JOIN utente u 
+                                ON u.id = v.id_autista
+                                AND v.id = :id_viaggio;
+                       ");
+            $stmt->execute([
+                "id_viaggio" => $TRIP_ID
+            ]);
+            return $stmt->fetchAll();
+        }
+        catch (PDOException $exception){
+            return 0;
+        }
+    }
+
+    private function getPassengerAndTripData($USER_ID, $TRIP_ID)
+    {
+        try{
+            $stmt = $this->connection->prepare(
+                "SELECT nome, cognome, email, telefono, v.id trip_id, partenza, destinazione, giudizio
+                        FROM utente u
+                            JOIN feedback f on u.id = f.id_passeggero
+                            JOIN viaggio v ON v.id = :trip_id
+                            AND f.da_chi = 'autista'                      
+                            AND u.id = :id
+                        GROUP BY giudizio   
+                        ");
+            $stmt->execute([
+                "trip_id" => $TRIP_ID,
+                "id" => $USER_ID
+            ]);
+            return $stmt->fetchAll();
+        }
+        catch (PDOException $exception){
+            return 0;
+        }
+    }
 }

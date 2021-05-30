@@ -24,7 +24,7 @@ class UserController extends Rest
     {
         switch ($PARAMS[0]){
             case "login":
-                $this->userService->loginUser($BODY);
+                $this->userService->loginUser($PARAMS[1], $PARAMS[2]);
                 break;
             default:
                 HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);

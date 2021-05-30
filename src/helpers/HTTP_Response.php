@@ -7,6 +7,7 @@ class HTTP_Response{
     const MSG_CREATED = "Successfully created";
     const ACCEPTED = 202;
     const NO_CONTENT = 204;
+    const MSG_NO_CONTENT = "No content";
     const NOT_MODIFIED = 304;
     const BAD_REQUEST = 400;
     const MSG_BAD_REQUEST = "Bad request";
@@ -17,6 +18,7 @@ class HTTP_Response{
     const MSG_NOT_FOUND = "Please check you request path!";
     const METHOD_NOT_ALLOWED = 405;
     const NOT_ACCEPTABLE = 406;
+    const MSG_NOT_ACCEPTABLE = "Not acceptable request";
     const INTERNAL_SERVER_ERROR = 500;
     const MSG_INTERNAL_SERVER_ERROR = "Internal server error";
     const NOT_IMPLEMENTED = 501;

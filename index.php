@@ -2,16 +2,16 @@
 require_once("./src/helpers/common.php");
 require_once("./src/helpers/HttpMapping.php");
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    header("Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Authorization, Content-Type,Accept, Origin");
-    exit(0);
-}
-
 $HTTP_ORIGIN = $_SERVER['HTTP_ORIGIN'];
 
 if (controlOrigin($HTTP_ORIGIN)) {
     header("Access-Control-Allow-Origin: $HTTP_ORIGIN");
+
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Authorization, Content-Type,Accept, Origin");
+    exit(0);
+}
     new Environment;
 
     $URL = preg_split('@/@', $_SERVER['REQUEST_URI'], -1, PREG_SPLIT_NO_EMPTY);

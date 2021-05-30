@@ -19,9 +19,9 @@ class UserService
         }
     }
 
-    public function loginUser($BODY)
+    public function loginUser($USERNAME, $PASSWORD)
     {
-        $this->userRepository->loginUser($BODY);
+        $this->userRepository->loginUser($USERNAME, $PASSWORD);
     }
 
     public function addLicense($BODY)
