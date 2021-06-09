@@ -17,7 +17,12 @@ class TripRepository
     public function getAllAvailable()
     {
         try{
-            $stmt = $this->connection->prepare("SELECT id, partenza, destinazione, durata, data_di_partenza, creato_al FROM viaggio WHERE stato = 'Not Completed';");
+            $stmt = $this->connection->prepare(
+                "SELECT id, partenza, destinazione, durata, data_di_partenza, creato_al, contributo, v.foto, v.numero_posti
+                        FROM viaggio 
+                        JOIN veicolo v on v.targa = viaggio.id_veicolo and v.id_autista = viaggio.id_autista
+                        WHERE stato = 'Not Completed' 
+                        ORDER BY data_di_partenza;");
             $stmt->execute();
             HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
         }
@@ -83,15 +88,20 @@ class TripRepository
             $stmt = $this->connection->prepare(
                 "SELECT
                     v.id, v.partenza, v.destinazione, v.durata, v.creato_al, v.data_di_partenza, v.animali, v.bagagli, v.soste, 
-                    u.nome, u.cognome, u.email, u.telefono 
+                    u.nome, u.cognome, u.email, u.telefono,
+                    v2.targa, marca, modello, alimentazione, numero_posti, aria_condizionata, foto
                 FROM viaggio v
+                JOIN veicolo v2 on v2.targa = v.id_veicolo and v2.id_autista = v.id_autista
                 JOIN utente u
                 ON v.id = :id 
                   AND v.stato = 'Not Completed'
                   AND v.id_autista = u.id
             ;");
             $stmt->execute(["id" => $ID]);
-            HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
+            $stmt->rowCount()
+                ? HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll() , HTTP_Response::OK)
+                : HTTP_Response::Send(HTTP_Response::MSG_NO_CONTENT, HTTP_Response::NO_CONTENT);
+
         }
         catch (PDOException $exception){
             HTTP_Response::SendWithBody(HTTP_Response::MSG_INTERNAL_SERVER_ERROR, $exception, HTTP_Response::INTERNAL_SERVER_ERROR);

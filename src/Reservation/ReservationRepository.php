@@ -14,35 +14,6 @@ class ReservationRepository
         $this->connection = $db->connection();
     }
 
-    public function getBookingByTripId($USER_ID, $TRIP_ID)
-    {
-        try{
-            $stmt = $this->connection->prepare("SELECT * FROM prenotazione WHERE id_passeggero = :id_passeggero AND id_viaggio = :id_viaggio;");
-            $stmt->execute([
-                "id_passeggero" => $USER_ID,
-                "id_viaggio" => $TRIP_ID
-            ]);
-            HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
-        }
-        catch (PDOException $exception){
-            HTTP_Response::SendWithBody(HTTP_Response::MSG_INTERNAL_SERVER_ERROR, $exception, HTTP_Response::INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public function getAllBookingParticipated($USER_ID)
-    {
-        try{
-            $stmt = $this->connection->prepare("SELECT * FROM prenotazione WHERE id_passeggero = :id_passeggero;");
-            $stmt->execute([
-                "id_passeggero" => $USER_ID
-            ]);
-            HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
-        }
-        catch (PDOException $exception){
-            HTTP_Response::SendWithBody(HTTP_Response::MSG_INTERNAL_SERVER_ERROR, $exception, HTTP_Response::INTERNAL_SERVER_ERROR);
-        }
-    }
-
     public function getBookingAllPassengersByTripId($USER_ID, $TRIP_ID, $VOTE)
     {
         try{
@@ -163,9 +134,13 @@ class ReservationRepository
     {
         try{
             $stmt = $this->connection->prepare(
-                "SELECT nome, cognome, email, telefono, v.id trip_id, partenza, destinazione, giudizio
+                "SELECT u.nome, u.cognome, u.email, u.telefono,
+                       u2.nome nome_autista, u2.cognome cognome_autista,
+                       v.id trip_id, v.partenza, v.destinazione,
+                       f.giudizio, f.voto
                         FROM utente u
-                            JOIN feedback f on u.id = f.id_passeggero
+                            JOIN feedback f ON u.id = f.id_passeggero
+                            JOIN utente u2 ON u2.id = f.id_passeggero
                             JOIN viaggio v ON v.id = :trip_id
                             AND f.da_chi = 'autista'                      
                             AND u.id = :id

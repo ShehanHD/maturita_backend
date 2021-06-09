@@ -50,7 +50,7 @@ function sendMail($state, $data){
             $email = reservationRejectMail($data[0]);
             break;
         case "new":
-            $email = newReservationMail($data[0]);
+            $email = newReservationMail($data);
             break;
         default:
             HTTP_Response::Send(HTTP_Response::MSG_BAD_REQUEST, HTTP_Response::BAD_REQUEST);
@@ -59,7 +59,7 @@ function sendMail($state, $data){
 
     $body = [
         "from" => "wecode.best.server@gmail.com",
-        "to"=> "shehanhd@gmail.com",//$data[0]['email'],
+        "to"=> $data[0]['email'],
         "subject"=> "Verify user registration",
         "text"=> "test mail",
         "html"=> $email
@@ -255,13 +255,32 @@ function reservationRejectMail($data) : string
 }
 
 function newReservationMail($data) : string{
-    $tripId = $data["trip_id"];
-    $partenza = $data["partenza"];
-    $destinazione = $data["destinazione"];
-    $cognome = $data["cognome"];
-    $nome = $data["nome"];
-    $email = $data["email"];
-    $telefono = $data["telefono"];
+    $tripId = $data[0]["trip_id"];
+    $partenza = $data[0]["partenza"];
+    $destinazione = $data[0]["destinazione"];
+    $cognome = $data[0]["cognome"];
+    $nome = $data[0]["nome"];
+    $email = $data[0]["email"];
+    $telefono = $data[0]["telefono"];
+
+    function feedbacks($data)
+    {
+        $str = "";
+
+        foreach ($data as $row) {
+            $n = $row['nome_autista'];
+            $c = $row['cognome_autista'];
+            $g = $row['giudizio'];
+            $v = $row['voto'];
+               $str .= "<ul>
+                            <li>From: $n $c</li>
+                            <li>Feedback: $g</li>
+                            <li>Voto: $v</li>
+                       </ul>";
+        }
+
+        return $str;
+    }
 
     return ("
             <html>
@@ -307,9 +326,12 @@ function newReservationMail($data) : string{
                 img {
                   width: 15vw;
                 }
+                
+                .feedbacks{
+                    border-top: solid #334a5a 2px;
+                }
               </style>
             </head>
-            
             <body>
             
               <h1>Carpool</h1>
@@ -325,10 +347,15 @@ function newReservationMail($data) : string{
                        <li>Telephone number <a href='tel:+$telefono'>$telefono</a></li>
                     </ul>
                 </div>
-              
-              <div class='footer'>
-                <p>For more information you can contact you driver <b> </b></p>
-                <p>email  and Telephone </p>
+                
+                <div class='feedbacks'>
+                <h3>Feedbacks from other drivers</h3>
+                ".feedbacks($data)."
+                </div>
+                
+                <div class='footer'>
+                <p><a href='https://carpool.wecode.best'>carpoolig web site</a></p>
+                <p>contact us for any information. email <a href='mailto:wecode.best.server@gmail.com'>click here!</a></p>
               </div>
             </body>
             

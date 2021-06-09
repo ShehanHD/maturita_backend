@@ -23,14 +23,8 @@ class ReservationController extends Rest
     function getMapping($PARAMS, $BODY)
     {
         switch ($PARAMS[0]){
-            case "by_trip_id":
-                $this->reservationService->getBookingByTripId($PARAMS[1]);
-                break;
             case "all_passengers_by_trip_id":
                 $this->reservationService->getBookingAllPassengersByTripId($PARAMS[1], $PARAMS[2] ?? 0);
-                break;
-            case "all_participated":
-                $this->reservationService->getAllBookingParticipated();
                 break;
             default:
                 HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
