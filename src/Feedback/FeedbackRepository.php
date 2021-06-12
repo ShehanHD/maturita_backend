@@ -59,7 +59,13 @@ class FeedbackRepository
     public function getFeedbacksByPassenger($DRIVER_ID)
     {
         try{
-            $stmt = $this->connection->prepare("SELECT * FROM feedback WHERE id_autista = :id AND da_chi = 'passeggero';");
+            $stmt = $this->connection->prepare(
+                "SELECT f.id, f.voto, f.giudizio, u.nome, u.cognome, f.id_viaggio
+                        FROM feedback f
+                        JOIN utente u on f.id_passeggero = u.id
+                        WHERE id_autista = :id 
+                        AND da_chi = 'passeggero';"
+            );
             $stmt->execute(["id" => $DRIVER_ID]);
 
             HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
@@ -72,7 +78,10 @@ class FeedbackRepository
     public function getFeedbacksToPassenger($PASSENGER_ID)
     {
         try{
-            $stmt = $this->connection->prepare("SELECT * FROM feedback WHERE id_passeggero = :id AND da_chi = 'autista'");
+            $stmt = $this->connection->prepare(
+                "SELECT * FROM feedback 
+                        WHERE id_passeggero = :id 
+                          AND da_chi = 'autista'");
             $stmt->execute(["id" => $PASSENGER_ID]);
 
             HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);

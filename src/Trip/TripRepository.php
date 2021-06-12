@@ -13,7 +13,7 @@ class TripRepository
         $db = new DatabaseConfiguration();
         $this->connection = $db->connection();
     }
-
+//AND data_di_partenza > NOW()
     public function getAllAvailable()
     {
         try{
@@ -21,7 +21,8 @@ class TripRepository
                 "SELECT id, partenza, destinazione, durata, data_di_partenza, creato_al, contributo, v.foto, v.numero_posti
                         FROM viaggio 
                         JOIN veicolo v on v.targa = viaggio.id_veicolo and v.id_autista = viaggio.id_autista
-                        WHERE stato = 'Not Completed' 
+                        WHERE stato = 'Not Completed'
+                        
                         ORDER BY data_di_partenza;");
             $stmt->execute();
             HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
@@ -87,7 +88,7 @@ class TripRepository
         try{
             $stmt = $this->connection->prepare(
                 "SELECT
-                    v.id, v.partenza, v.destinazione, v.durata, v.creato_al, v.data_di_partenza, v.animali, v.bagagli, v.soste, 
+                    v.id, v.id_autista, v.partenza, v.destinazione, v.durata, v.creato_al, v.data_di_partenza, v.contributo, v.animali, v.bagagli, v.soste, 
                     u.nome, u.cognome, u.email, u.telefono,
                     v2.targa, marca, modello, alimentazione, numero_posti, aria_condizionata, foto
                 FROM viaggio v
