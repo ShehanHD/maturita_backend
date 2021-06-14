@@ -2,6 +2,7 @@
 require_once("./vendor/firebase/php-jwt/src/JWT.php");
 
 use Firebase\JWT\ExpiredException;
+use Firebase\JWT\BeforeValidException;
 use Firebase\JWT\JWT;
 
 class Authentication
@@ -21,7 +22,7 @@ class Authentication
             "aud" => "https://carpool.wecode.best",
             "iat" => time(),
             "nbf" => time() + 10,
-            "exp" => time() + 3600,
+            "exp" => time() + (3600 * 6),
             "data" => array(
                 'user_id' => Authentication::encrypt($data[0]['id'])
             )
@@ -49,7 +50,7 @@ class Authentication
 
             return !($token->iss !== $serverName || $token->nfb > $now->getTimestamp() || $token->exp < $now->getTimestamp());
         }
-        catch (ExpiredException|Exception $e){
+        catch (ExpiredException|Exception|BeforeValidException $e){
             return false;
         }
     }

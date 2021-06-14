@@ -61,8 +61,8 @@ class TripRepository
         try{
             $stmt = $this->connection->prepare(
                 "SELECT 
-                        v.id, v.partenza, v.destinazione, v.durata, v.creato_al, v.data_di_partenza, v.animali, v.bagagli, v.soste, 
-                        v2.marca, v2.modello, v2.targa, v2.foto
+                        v.id, v.partenza, v.destinazione, v.durata, v.creato_al, v.data_di_partenza, v.animali, v.bagagli, v.soste, v.contributo, 
+                        v2.marca, v2.modello, v2.targa, v2.foto, v2.numero_posti
                         FROM viaggio v 
                         JOIN veicolo v2 ON v2.targa = v.id_veicolo and v2.id_autista = v.id_autista
                                              AND v.stato = 'Not Completed'
@@ -162,6 +162,16 @@ class TripRepository
         catch (PDOException $exception){
             HTTP_Response::SendWithBody(HTTP_Response::MSG_INTERNAL_SERVER_ERROR, $exception, HTTP_Response::INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public function isDriver($USER_ID)
+    {
+        $stmt = $this->connection->prepare("SELECT * FROM autista WHERE id_utente = :id");
+        $stmt->execute([
+            "id" => $USER_ID
+        ]);
+
+        HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, (bool)$stmt->rowCount(), HTTP_Response::OK);
     }
 
     private function tripId(): string

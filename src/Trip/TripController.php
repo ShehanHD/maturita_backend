@@ -42,6 +42,9 @@ class TripController extends Rest
             case "by_id":
                 $this->tripService->getTripById($PARAMS[1]);
                 break;
+            case "is_driver":
+                $this->tripService->isDriver();
+                break;
             default:
                 HTTP_Response::Send(HTTP_Response::MSG_NOT_FOUND, HTTP_Response::NOT_FOUND);
                 break;

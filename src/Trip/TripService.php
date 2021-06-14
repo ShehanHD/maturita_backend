@@ -19,6 +19,13 @@ class TripService
         $this->tripRepository->getAllAvailable();
     }
 
+    public function isDriver()
+    {
+        Authentication::verifyJWT()
+            ? $this->tripRepository->isDriver(Authentication::getId())
+            : HTTP_Response::Send(HTTP_Response::MSG_UNAUTHORIZED, HTTP_Response::UNAUTHORIZED);
+    }
+
     public function getAllDriven()
     {
         Authentication::verifyJWT()
