@@ -27,7 +27,7 @@ class TripController extends Rest
             case "all_available":
                 $this->tripService->getAllAvailable();
                 break;
-            case "all_driven":
+            case "all_created":
                 $this->tripService->getAllDriven();
                 break;
             case "all_participated":

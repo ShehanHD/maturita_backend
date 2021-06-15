@@ -22,7 +22,7 @@ class TripRepository
                         FROM viaggio 
                         JOIN veicolo v on v.targa = viaggio.id_veicolo and v.id_autista = viaggio.id_autista
                         WHERE stato = 'Not Completed'
-                        
+                        AND data_di_partenza > NOW()
                         ORDER BY data_di_partenza;");
             $stmt->execute();
             HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
@@ -35,7 +35,13 @@ class TripRepository
     public function getAllDriven($ID)
     {
         try{
-            $stmt = $this->connection->prepare("SELECT * FROM viaggio WHERE id_autista = :id_autista AND stato = 'Completed';");
+            $stmt = $this->connection->prepare(
+                "SELECT id, id_veicolo, partenza, destinazione, durata, data_di_partenza, creato_al, stato, foto 
+                FROM viaggio 
+                JOIN veicolo v 
+                    ON v.targa = viaggio.id_veicolo 
+                           AND v.id_autista = viaggio.id_autista
+                           AND v.id_autista = :id_autista;");
             $stmt->execute(["id_autista" => $ID]);
             HTTP_Response::SendWithBody(HTTP_Response::MSG_OK, $stmt->fetchAll(), HTTP_Response::OK);
         }

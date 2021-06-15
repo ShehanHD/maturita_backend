@@ -144,7 +144,6 @@ function reservationConformMail($data): string
             </head>
             
             <body>
-            
               <h1>Carpool</h1>
               <p>Your request has been <b>accepted</b></p>
             
@@ -162,7 +161,6 @@ function reservationConformMail($data): string
                   <li>Pets: $animali</li>
                 </ul>
               </div>
-            
               <div class='footer'>
                 <p>For more information you can contact you driver <b>$cognome $nome</b></p>
                 <p>email <a href='mailto:$email'>$email</a> and Telephone <a href='tel:+$telefono'>$telefono</a></p>

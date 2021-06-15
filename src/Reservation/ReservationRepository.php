@@ -23,7 +23,7 @@ class ReservationRepository
             else{
                 $stmt = $this->connection->prepare(
                     "SELECT *, AVG(f.voto) voto_media FROM prenotazione p
-                            JOIN feedback f 
+                            LEFT JOIN feedback f 
                                 ON p.id_passeggero = f.id_passeggero
                                 AND p.id_viaggio = :id_viaggio
                                 AND f.da_chi = 'passeggero'
@@ -139,12 +139,12 @@ class ReservationRepository
                        v.id trip_id, v.partenza, v.destinazione,
                        f.giudizio, f.voto
                         FROM utente u
-                            JOIN feedback f ON u.id = f.id_passeggero
-                            JOIN utente u2 ON u2.id = f.id_passeggero
+                            LEFT JOIN feedback f ON u.id = f.id_passeggero
+                            LEFT JOIN utente u2 ON u2.id = f.id_passeggero
                             JOIN viaggio v ON v.id = :trip_id
-                            AND f.da_chi = 'autista'                      
+                            OR f.da_chi = 'autista'
                             AND u.id = :id
-                        GROUP BY giudizio   
+                        GROUP BY giudizio  
                         ");
             $stmt->execute([
                 "trip_id" => $TRIP_ID,
