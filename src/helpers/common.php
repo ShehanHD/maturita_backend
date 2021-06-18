@@ -2,101 +2,110 @@
 
 function __autoload($class_name): bool
 {
-    $folders = array(
-        "api",
-        "helpers",
-        "User",
-        "Configuration",
-        "User",
-        "Passenger",
-        "Trip",
-        "Reservation",
-        "Feedback"
-    );
-    $filename = $class_name . '.php';
+  $folders = array(
+    "api",
+    "helpers",
+    "User",
+    "Configuration",
+    "User",
+    "Passenger",
+    "Trip",
+    "Reservation",
+    "Feedback"
+  );
+  $filename = $class_name . '.php';
 
-    $file = $filename;
+  $file = $filename;
 
-    foreach ($folders as $folder) {
-        if (file_exists("./src/$folder/" . $file)) {
-            require_once("./src/$folder/$file");
-            return true;
-        }
+  foreach ($folders as $folder) {
+    if (file_exists("./src/$folder/" . $file)) {
+      require_once("./src/$folder/$file");
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 function controlOrigin($ORIGIN): bool
 {
-    $whiteList = array("https://backend.wecode.best", "http://localhost:3000", null);
-    $verified = false;
+  $whiteList = array("https://carpool.wecode.best", "https://wecode.best", "http://localhost:3000", null);
+  $verified = false;
 
-    foreach ($whiteList as $value) {
-        if($value === $ORIGIN){
-            $verified = true;
-        }
+  foreach ($whiteList as $value) {
+    if ($ORIGIN === $value) {
+      $verified = true;
     }
+  }
 
-    return $verified;
+  return $verified;
 }
 
-function sendMail($state, $data){
-    $email = "";
-    switch ($state){
-        case "accepted":
-            $email = reservationConformMail($data[0]);
-            break;
-        case "refused":
-            $email = reservationRejectMail($data[0]);
-            break;
-        case "new":
-            $email = newReservationMail($data);
-            break;
-        default:
-            HTTP_Response::Send(HTTP_Response::MSG_BAD_REQUEST, HTTP_Response::BAD_REQUEST);
-            break;
-    }
+function sendMail($state, $data, $feedback)
+{
+  $email = "";
+  $msg = "";
 
-    $body = [
-        "from" => "wecode.best.server@gmail.com",
-        "to"=> $data[0]['email'],
-        "subject"=> "Verify user registration",
-        "text"=> "test mail",
-        "html"=> $email
-    ];
+  switch ($state) {
+    case "accepted":
+      $email = reservationConformMail($data[0]);
+      $msg = "You'r booking has been accepted";
+      break;
+    case "refused":
+      $email = reservationRejectMail($data[0]);
+      $msg = "You'r booking has been rejected";;
+      break;
+    case "new":
+      $email = newReservationMail($data, $feedback);
+      $msg = "New reservation";
+      break;
+    default:
+      HTTP_Response::Send(HTTP_Response::MSG_BAD_REQUEST, HTTP_Response::BAD_REQUEST);
+      break;
+  }
 
-    $opts = array('http' =>
-        array(
-            'method'  => 'POST',
-            'header'  => "Content-Type: application/json",
-            'content' => json_encode($body),
-            'timeout' => 60
-        )
-    );
+  $body = [
+    "from" => "wecode.best.server@gmail.com",
+    "to" => $data[0]['email'],
+    "subject" => $msg,
+    "text" => "test mail",
+    "html" => $email
+  ];
 
-    $context  = stream_context_create($opts);
-    $url = "http://192.168.1.100:40006/api/send";
+  $opts = array(
+    'http' =>
+    array(
+      'method'  => 'POST',
+      'header'  => "Content-Type: application/json",
+      'content' => json_encode($body),
+      'timeout' => 60
+    )
+  );
 
-    return file_get_contents($url, false, $context);
+  $context  = stream_context_create($opts);
+
+  $url = "http://192.168.1.100:40006/api/send";
+
+  file_get_contents($url, false, $context);
+  return $feedback;
 }
 
 function reservationConformMail($data): string
 {
-    $tripId = $data["id"];
-    $partenza = $data["partenza"];
-    $destinazione = $data["destinazione"];
-    $data_di_partenza = $data["data_di_partenza"];
-    $durata = $data["durata"];
-    $contributo = $data["contributo"];
-    $soste = $data["soste"];
-    $bagagli = $data["bagagli"] ? "Yes" : "No";
-    $animali = $data["animali"] ? "Yes" : "No";
-    $cognome = $data["cognome"];
-    $nome = $data["nome"];
-    $email = $data["email"];
-    $telefono = $data["telefono"];
+  $tripId = $data["id"];
+  $partenza = $data["partenza"];
+  $destinazione = $data["destinazione"];
+  $data_di_partenza = $data["data_di_partenza"];
+  $durata = $data["durata"];
+  $contributo = $data["contributo"];
+  $soste = $data["soste"];
+  $bagagli = $data["bagagli"] ? "Yes" : "No";
+  $animali = $data["animali"] ? "Yes" : "No";
+  $cognome = $data["cognome"];
+  $nome = $data["nome"];
+  $email = $data["email"];
+  $telefono = $data["telefono"];
 
-    return ("
+  return ("
             <html>
             
             <head>
@@ -171,17 +180,17 @@ function reservationConformMail($data): string
         ");
 }
 
-function reservationRejectMail($data) : string
+function reservationRejectMail($data): string
 {
-    $tripId = $data["id"];
-    $partenza = $data["partenza"];
-    $destinazione = $data["destinazione"];
-    $cognome = $data["cognome"];
-    $nome = $data["nome"];
-    $email = $data["email"];
-    $telefono = $data["telefono"];
+  $tripId = $data["id"];
+  $partenza = $data["partenza"];
+  $destinazione = $data["destinazione"];
+  $cognome = $data["cognome"];
+  $nome = $data["nome"];
+  $email = $data["email"];
+  $telefono = $data["telefono"];
 
-    return ("
+  return ("
             <html>
             
             <head>
@@ -252,35 +261,39 @@ function reservationRejectMail($data) : string
         ");
 }
 
-function newReservationMail($data) : string{
-    $tripId = $data[0]["trip_id"];
-    $partenza = $data[0]["partenza"];
-    $destinazione = $data[0]["destinazione"];
-    $cognome = $data[0]["cognome"];
-    $nome = $data[0]["nome"];
-    $email = $data[0]["email"];
-    $telefono = $data[0]["telefono"];
+function newReservationMail($data, $feedback): string
+{
+  $tripId = $data[0]["id"];
+  $partenza = $data[0]["partenza"];
+  $destinazione = $data[0]["destinazione"];
+  $cognome = $feedback[0]["cognome"];
+  $nome = $feedback[0]["nome"];
+  $email = $feedback[0]["email"];
+  $telefono = $feedback[0]["telefono"];
 
-    function feedbacks($data)
-    {
-        $str = "";
+  function feedbacks($feedback)
+  {
+    $str = "";
 
-        foreach ($data as $row) {
-            $n = $row['nome_autista'];
-            $c = $row['cognome_autista'];
-            $g = $row['giudizio'];
-            $v = $row['voto'];
-               $str .= "<ul>
-                            <li>From: $n $c</li>
-                            <li>Feedback: $g</li>
-                            <li>Voto: $v</li>
-                       </ul>";
-        }
-
-        return $str;
+    foreach ($feedback as $row) {
+      $n = $row['nome'];
+      $c = $row['cognome'];
+      $g = $row['giudizio'];
+      $v = $row['voto'];
+      if ($n !== null) {
+        $str .= "<ul>
+                    <li>From: $n $c</li>
+                    <li>Feedback: $g</li>
+                    <li>Voto: $v</li>
+                </ul>";
+      }
     }
 
-    return ("
+
+    return $str;
+  }
+
+  return ("
             <html>
             
             <head>
@@ -348,7 +361,7 @@ function newReservationMail($data) : string{
                 
                 <div class='feedbacks'>
                 <h3>Feedbacks from other drivers</h3>
-                ".feedbacks($data)."
+                " . feedbacks($feedback) . "
                 </div>
                 
                 <div class='footer'>
